@@ -42,3 +42,5 @@ plt.scatter(finalg['logTe'], finalg['logg'], marker='.')
 plt.gca().invert_xaxis()
 plt.gca().invert_yaxis()
 plt.show()
+
+finalg.write(r'C:\Users\clent\Documents\Group Studies')
