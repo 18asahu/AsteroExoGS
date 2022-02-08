@@ -1,53 +1,72 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Feb  3 15:13:26 2022
+Created on Thu Feb 3 15:13:26 2022
 
 @author: Raoul
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
+#import matplotlib as mpl
 #mpl.rcParams['text.usetex'] = True
 #mpl.rcParams['font.family'] = 'serif'
 #mpl.rcParams['font.size'] = 11
 
-delta_nu = 50 # just a first guess to make the plot look nice
-n = np.arange(39, 47) # just a first guess to make the plot look nice
-D = 0.75 # just a first guess to make the plot look nice
 def nu(delta_nu, n, l):
-    return delta_nu * (n + l/2 + 1/4) - D * l * (l + 1)
+    nu = []
+    for l in l:
+        nu.append(delta_nu * (n + l/2 + 1.45) - D * l * (l + 1))
+    return nu
 
-# define frequency arrays for each value of l
-nu_0 = nu(delta_nu, n, 0)
-nu_1 = nu(delta_nu, n, 1)
-nu_2 = nu(delta_nu, n, 2)
-nu_3 = nu(delta_nu, n, 3)
+def lorentzian(x, x_0, width):
+    return 1 / (np.pi * width * (1 + ((x - x_0) / width)**2))
 
-def lorentzian(x, x_0, gamma):
-    return 1 / (np.pi * gamma * (1 + ((x - x_0) / gamma)**2))
+def gaussian(x, sigma, mu):
+    return np.exp(-(x - mu)**2 / (2 * sigma**2)) / (sigma * np.sqrt(2 * np.pi))
 
-gamma = 0.5 # just a first guess to make the plot look nice
-x = np.linspace(2100, 2400, 10000) # range of frequencies to be plotted
+# Define solar parameters
+L_sun = 3.846e26 # W
+M_sun = 1.989e30 # kg
+R_sun = 6.957e8 # m
+
+# Define stellar parameters
+L = L_sun
+M = M_sun
+R = R_sun
+
+# Define temperatures
+T_0 = 436 # K
+T_eff = 5777 # K
+T_red = 8907 * (L / L_sun)**(-0.093) # K
+
+n = np.arange(40) # Array of n values to be plotted
+l = np.arange(4) # Array of l values to be plotted
+D = 1.5 # μHz
+gamma_0 = 1.02 # μHz
+delta_nu = M**(1/2) * R**(-3/2) * 135 / (M_sun**(1/2) * R_sun**(-3/2)) # μHz
+nu = nu(delta_nu, n, l) # μHz
+gamma = gamma_0 * np.exp((T_eff - 5777) / T_0) # μHz
+amplitude = 2.1 * (1 - np.exp((T_eff - T_red) / 1250)) # ppm
+visibility = np.array([1, 1.5, 0.5, 0.04])
+
+nu_max = 3090 # μHz
+sigma = nu_max / 2 / np.sqrt(8 * np.log(2))
+x = np.linspace(nu_max-2000, nu_max+2000, 10000) # μHz
 
 plt.figure(figsize=(8, 5))
 
-# use for loops to plot all the values of n and l
-for i in nu_0:
-    y = 7.5 * lorentzian(x, i, gamma)
-    plt.plot(x, y)
-for i in nu_1:
-    y = 10 * lorentzian(x, i, gamma)
-    plt.plot(x, y)
-for i in nu_2:
-    y = 4 * lorentzian(x, i, gamma)
-    plt.plot(x, y)
-for i in nu_3:
-    y = lorentzian(x, i, gamma)
-    plt.plot(x, y)
-    
-plt.title('Oscillation spectrum sample plot')
-plt.xlabel(r'Frequency [$\mu$Hz]')
-plt.ylabel('PSD')
+for l in l:
+    y = np.zeros_like(x)
+    for n in nu[l]:
+        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / gamma * visibility[l] * 1e6 * lorentzian(x, n, gamma)
+    plt.plot(x, y, label=r'$l$ = {}'.format(l))
+
+plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
+plt.title('Solar oscillation spectrum')
+plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
+plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
+plt.xlim(np.min(x), np.max(x))
+plt.ylim(0)
+plt.legend()
 plt.savefig('oscillation_spectrum.pdf')
