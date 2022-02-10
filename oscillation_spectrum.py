@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 
 def nu(delta_nu, n, l):
     nu = []
-    for l in l:
-        nu.append(delta_nu * (n + l/2 + 1.45) - D * l * (l + 1))
+    for i in l:
+        nu.append(delta_nu * (n + i/2 + 1.45) - D * i * (i + 1))
     return nu
 
 def lorentzian(x, x_0, width):
@@ -54,17 +54,23 @@ amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
 visibility = np.array([1, 1.5, 0.5, 0.04])
 
 nu_max = 3090 # μHz
+nu_range = 2500 # μHz
 fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
-x = np.linspace(nu_max-2000, nu_max+2000, 10000) # μHz
+x = np.linspace(nu_max-nu_range, nu_max+nu_range, 10000) # μHz
+sigma_c = 20000 #gamma / (2 * np.sqrt(2 * np.log(2)))
+tau_c = 250
+P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
+#P_granulation = 2 / np.pi * 560**2 / 2.3 / (1 + (x/2.3)**2)
 
 plt.figure(figsize=(8, 5))
+plt.plot(x, P_granulation, color='k', label='Granulation')
 
-for l in l:
+for i in l:
     y = np.zeros_like(x)
-    for n in nu[l]:
-        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / gamma * visibility[l] * lorentzian(x, n, gamma)
-    plt.plot(x, y, label=r'$l$ = {}'.format(l))
+    for j in nu[i]:
+        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / gamma * visibility[i] * lorentzian(x, j, gamma)
+    plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
 
 plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
 plt.title('Solar oscillation spectrum')
