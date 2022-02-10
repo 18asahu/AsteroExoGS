@@ -45,8 +45,11 @@ delta_T = 1250 # K
 n = np.arange(40) # Array of n values to be plotted
 l = np.arange(4) # Array of l values to be plotted
 D = 1.5 # μHz
-gamma_0 = 1.02 # μHz
-gamma = gamma_0 * np.exp((T_eff - 5777) / T_0) # μHz
+
+# old version of linewidth
+# gamma_0 = 1.02 # μHz
+# gamma = gamma_0 * np.exp((T_eff - 5777) / T_0) # μHz
+
 delta_nu = M**(1/2) * R**(-3/2) * 135 / (M_sun**(1/2) * R_sun**(-3/2)) # μHz
 nu = nu(delta_nu, n, l) # μHz
 beta = (1 - np.exp((T_eff - T_red) / delta_T))
@@ -63,13 +66,38 @@ tau_c = 250
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
 #P_granulation = 2 / np.pi * 560**2 / 2.3 / (1 + (x/2.3)**2)
 
+#new method of linewidth
+y = (nu_max/3090)
+
+alpha = 2.95*y + 0.39 
+gamma_alpha = 3.08*y + 3.32
+Wdip = 4637*y - 141
+nu_dip = 2984*y+ 60 
+if nu_max < 4000:
+    delta_gamma_dip = -0.47*y + 0.77
+else:
+    delta_gamma_dip = 0.001
+
+linewidthlist = []
+for i in range(len(nu)):
+    linewidth = np.exp((alpha*np.log(nu[i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(nu[i]/nu_dip))/np.log(Wdip/nu_max))**2))))
+    linewidthlist.append(linewidth)
+
+    
+plt.plot(nu, linewidthlist)
+plt.title('Linewidth against Frequency for the Sun (Vmax = 3090$\mu$Hz)')
+plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
+plt.ylabel(r'Linewidth, $\Gamma$ [$\mu$Hz]')
+plt.savefig('linewidth_against_frequency.png')
+plt.show()
+
 plt.figure(figsize=(8, 5))
 plt.plot(x, P_granulation, color='k', label='Granulation')
 
 for i in l:
     y = np.zeros_like(x)
     for j in nu[i]:
-        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / gamma * visibility[i] * lorentzian(x, j, gamma)
+        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth[i] * visibility[i] * lorentzian(x, j, linewidth[i])
     plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
 
 plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
