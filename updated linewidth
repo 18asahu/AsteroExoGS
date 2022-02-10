@@ -1,0 +1,26 @@
+import numpy as np
+
+nu_max = 3090 #Hz
+y = (nu_max/3090)
+
+alpha = 2.95*y + 0.39 
+gamma_alpha = 3.08*y + 3.32
+Wdip = 4637*y - 141
+nu_dip = 2984*y+ 60 
+if nu_max < 4000:
+    delta_gamma_dip = -0.47*y + 0.77
+else:
+    delta_gamma_dip = 0.001
+
+linewidthlist = []
+for i in range(len(nu)):
+    linewidth = np.exp((alpha*np.log(nu[i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(nu[i]/nu_dip))/np.log(Wdip/nu_max))**2))))
+    linewidthlist.append(linewidth)
+
+    
+plt.plot(nu, linewidthlist)
+plt.title('Linewidth against Frequency for the Sun (Vmax = 3090$\mu$Hz)')
+plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
+plt.ylabel(r'Linewidth, $\Gamma$ [$\mu$Hz]')
+plt.savefig('linewidth_against_frequency.png')
+plt.show()
