@@ -57,7 +57,7 @@ amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
 visibility = np.array([1, 1.5, 0.5, 0.04])
 
 nu_max = 3090 # μHz
-nu_range = 2500 # μHz
+nu_range = 2000 # μHz
 fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
 x = np.linspace(nu_max-nu_range, nu_max+nu_range, 10000) # μHz
@@ -96,8 +96,10 @@ plt.plot(x, P_granulation, color='k', label='Granulation')
 
 for i in l:
     y = np.zeros_like(x)
+    index = 0
     for j in nu[i]:
-        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth[i] * visibility[i] * lorentzian(x, j, linewidth[i])
+        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth[index] * visibility[i] * lorentzian(x, j, linewidth[index])
+        index += 1
     plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
 
 plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
