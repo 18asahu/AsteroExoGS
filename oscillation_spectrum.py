@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Feb 3 15:13:26 2022
+Created on Fri Feb 11 16:50:14 2022
 
-@author: Raoul
+@author: rlh
 """
 
 import numpy as np
@@ -60,13 +60,13 @@ nu_max = 3090 # μHz
 nu_range = 2000 # μHz
 fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
-x = np.linspace(nu_max-nu_range, nu_max+nu_range, 10000) # μHz
-sigma_c = 10000 #gamma / (2 * np.sqrt(2 * np.log(2)))
-tau_c = 250
+x = np.linspace(1, nu_max+nu_range, 10000) # μHz
+sigma_c = 26 #gamma / (2 * np.sqrt(2 * np.log(2)))
+tau_c = 250e-6
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
-#P_granulation = 2 / np.pi * 560**2 / 2.3 / (1 + (x/2.3)**2)
+# P_granulation = 2 / np.pi * 560**2 / 2.3 / (1 + (x/2.3)**2)
 
-#new method of linewidth
+# #new method of linewidth
 y = (nu_max/3090)
 
 alpha = 2.95*y + 0.39 
@@ -82,31 +82,44 @@ linewidthlist = []
 for i in range(len(nu)):
     linewidth = np.exp((alpha*np.log(nu[i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(nu[i]/nu_dip))/np.log(Wdip/nu_max))**2))))
     linewidthlist.append(linewidth)
-
     
 plt.plot(nu, linewidthlist)
 plt.title('Linewidth against Frequency for the Sun (Vmax = 3090$\mu$Hz)')
 plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
 plt.ylabel(r'Linewidth, $\Gamma$ [$\mu$Hz]')
-plt.savefig('linewidth_against_frequency.png')
+# plt.savefig('linewidth_against_frequency.png')
 plt.show()
 
 plt.figure(figsize=(8, 5))
-
+y_combined = np.zeros_like(x)
 for i in l:
     y = np.zeros_like(x)
-    index = 0
+    index= 0
     for j in nu[i]:
         y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth[index] * visibility[i] * lorentzian(x, j, linewidth[index])
-        index += 1
-    plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
+        index+=1
+    plt.plot(x, y+P_granulation, label=r'$l$ = {}'.format(i))
+    y_combined += y
     
 plt.plot(x, P_granulation, color='k', label='Granulation')
 plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
 plt.title('Solar oscillation spectrum')
 plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
+plt.xscale("log")
 plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
-plt.xlim(np.min(x), np.max(x))
-plt.ylim(0)
+plt.yscale("log")
+# plt.xlim(np.min(x), np.max(x))
+# plt.ylim(0)
 plt.legend()
-plt.savefig('oscillation_spectrum.pdf')
+# plt.savefig('solar oscillation with granulation')
+curve, = plt.plot(x, y_combined + P_granulation, lw=0)
+xdata = curve.get_xdata()
+ydata = curve.get_ydata()
+plt.show()
+
+plt.figure(figsize=(8, 5))
+plt.plot(xdata, ydata)
+plt.xscale("log")
+plt.yscale("log")
+plt.show()
+np.savetxt('oscillation_data.csv', np.vstack((xdata, ydata)).T, delimiter=',')
