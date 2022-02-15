@@ -54,10 +54,9 @@ amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
 visibility = np.array([1, 1.5, 0.5, 0.04])
 
 nu_max = 3090 # μHz
-nu_range = 2000 # μHz
 fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
-x = np.linspace(1, nu_max+nu_range, 10000) # μHz
+x = np.linspace(1, nu_max+fwhm, np.int((nu_max+fwhm-1)/0.0317)) # μHz
 sigma_c = sigma_c_sun*(L/L_sun)*((M_sun/M)**1.5)*((T_eff_sun/T_eff)**2.75)*((nu_max/nu_max_sun)**0.5)
 tau_c = 250/1000000
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
