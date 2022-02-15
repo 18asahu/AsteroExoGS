@@ -66,6 +66,7 @@ P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
 # #new method of linewidth
 y = (nu_max/3090)
 
+#wrong way round in paper
 alpha = 2.95*y + 0.39 
 gamma_alpha = 3.08*y + 3.32
 Wdip = 4637*y - 141
