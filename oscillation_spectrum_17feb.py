@@ -7,7 +7,6 @@ Created on Thu Feb 17 14:29:12 2022
 
 import numpy as np
 from astropy.table import Table
-import astropy.units as u
 import astropy.constants as const
 import matplotlib.pyplot as plt
 import matplotlib as mpl
