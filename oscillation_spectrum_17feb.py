@@ -48,10 +48,12 @@ T_0 = 436 # K
 T_red = 8907 * (L / L_sun)**(-0.093) # K
 delta_T = 1250 # K
 
+# Temporary code to plot the Sun!
 L = L_sun
 M = M_sun
 R = R_sun
 g = g_solar
+T_eff = T_eff_sun
 
 D = 1.5 # μHz
 
