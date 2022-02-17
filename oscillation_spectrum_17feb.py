@@ -38,6 +38,7 @@ tau_c_sun = 250e-6 # Ms
 nu_max_sun = 3090 # μHz
 g_solar = 274 # ms-2
 
+# Import the data table, edit the directory to your own
 datadir = '/home/rlh/Documents/Group Studies/Data/'
 t = Table.read(datadir+'K_bytempandgrav.csv')
 
