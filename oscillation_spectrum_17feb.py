@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 17 14:29:12 2022
+
+@author: Megan
+"""
 
 import numpy as np
 from astropy.table import Table
@@ -35,25 +40,13 @@ g_solar = 274 # ms-2
 
 datadir = '/home/rlh/Documents/Group Studies/Data/'
 t = Table.read(datadir+'K_bytempandgrav.csv')
-L_K = []
-M_K = []
-R_K = []
-T_eff_K = []
-g_K =[]
-for i in range(len(t)):
-    L_K.append(10**t['logL'][i] * L_sun)
-    M_K.append(t['Mass'][i] * M_sun)
-    T_eff_K.append(10**t['logTe'][i])
-    g_K.append((10**t['logg'][i])*0.01)
-    R_K.append(np.sqrt((G*(t['Mass'][i] * M_sun))/((10**t['logg'][i])*0.01)))
 
-star = 3
-L = L_K[star]
-M = M_K[star]
-R = R_K[star]
-T_eff = T_eff_K[star]
-g = g_K[star]
-
+ID = np.random.choice(t['ID'])
+print('Star ID: {}'.format(ID))
+L = 10**t['ID' == ID]['logL'] * L_sun
+M = t['ID' == ID]['Mass'] * M_sun
+R = np.sqrt((G*(t['ID' == ID]['Mass'] * M_sun))/((10**t['ID' == ID]['logg'])*0.01))
+T_eff = 10**t['ID' == ID]['logTe']
 T_0 = 436 # K
 T_red = 8907 * (L / L_sun)**(-0.093) # K
 delta_T = 1250 # K
@@ -101,5 +94,5 @@ plt.xscale("log")
 plt.yscale("log")
 plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
 plt.legend()
-plt.savefig('oscillation_spectrum.pdf')
-np.savetxt('oscillation_data_36.csv', np.vstack((x, y_combined)).T, delimiter=',')
+plt.show()
+np.savetxt('oscillation_data_{}.csv'.format(ID), np.vstack((x, y_combined)).T, delimiter=',')
