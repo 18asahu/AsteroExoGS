@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 17 14:29:12 2022
-
-@author: Megan
-"""
 
 import numpy as np
 from astropy.table import Table
