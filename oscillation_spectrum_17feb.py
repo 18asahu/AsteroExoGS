@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 17 14:29:12 2022
-
-@author: Megan
-"""
 
 import numpy as np
 from astropy.table import Table
@@ -52,11 +47,12 @@ for i in range(len(t)):
     g_K.append((10**t['logg'][i])*0.01)
     R_K.append(np.sqrt((G*(t['Mass'][i] * M_sun))/((10**t['logg'][i])*0.01)))
 
-L = L_K[3]
-M = M_K[3]
-R = R_K[3]
-T_eff = T_eff_K[3]
-g = g_K[3]
+star = 3
+L = L_K[star]
+M = M_K[star]
+R = R_K[star]
+T_eff = T_eff_K[star]
+g = g_K[star]
 
 T_0 = 436 # K
 T_red = 8907 * (L / L_sun)**(-0.093) # K
@@ -74,7 +70,7 @@ fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
 x = np.linspace(1, nu_max+fwhm, round((nu_max+fwhm-1)/0.0317)) # μHz
 sigma_c = sigma_c_sun*(L/L_sun)*((M_sun/M)**1.5)*((T_eff_sun/T_eff)**2.75)*((nu_max/nu_max_sun)**0.5)
-tau_c = 250/1000000
+tau_c = 250e-6 # Ms
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
 
 y = (nu_max/3090)
