@@ -18,7 +18,7 @@ def oscillation_array(M, R, l_max, n_max):
     return oscillation_array
 
 def lorentzian(x, x_0, width):
-    return 1 / (np.pi * width * (1 + ((x - x_0) / width)**2))
+    return 1 / (1 + ((x - x_0) / width / 2)**2)
 
 def gaussian(x, sigma, mu):
     return np.exp(-(x - mu)**2 / (2 * sigma**2))
@@ -42,10 +42,16 @@ print('Star ID: {}'.format(ID))
 L = 10**t['ID' == ID]['logL'] * L_sun
 M = t['ID' == ID]['Mass'] * M_sun
 R = np.sqrt((G*(t['ID' == ID]['Mass'] * M_sun))/((10**t['ID' == ID]['logg'])*0.01))
+g = 10**t['ID' == ID]['logg']*0.01
 T_eff = 10**t['ID' == ID]['logTe']
 T_0 = 436 # K
 T_red = 8907 * (L / L_sun)**(-0.093) # K
 delta_T = 1250 # K
+
+L = L_sun
+M = M_sun
+R = R_sun
+g = g_solar
 
 D = 1.5 # μHz
 
@@ -54,7 +60,8 @@ beta = (1 - np.exp((T_eff - T_red) / delta_T))
 amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
 visibility = np.array([1, 1.5, 0.5, 0.04])
 
-nu_max = 3090 # μHz
+nu_max = nu_max_sun*((g/g_solar)*(T_eff/T_eff_sun)**-0.5)
+nu_max_sun = 3090 # μHz
 fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
 x = np.linspace(1, nu_max+fwhm, round((nu_max+fwhm-1)/0.0317)) # μHz
@@ -62,7 +69,7 @@ sigma_c = sigma_c_sun*(L/L_sun)*((M_sun/M)**1.5)*((T_eff_sun/T_eff)**2.75)*((nu_
 tau_c = (nu_max/nu_max_sun)**(-1) * (250/1e6) # Ms
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
 
-y = (nu_max/3090)
+y = (nu_max/nu_max_sun)
 
 alpha = 2.95*y + 0.39 
 gamma_alpha = 3.08*y + 3.32
@@ -86,9 +93,10 @@ plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
 plt.plot(x, P_granulation, color='k', label='Granulation')
 plt.title('Stellar oscillation spectrum')
 plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
-plt.xscale("log")
-plt.yscale("log")
+#plt.xscale("log")
+#plt.yscale("log")
 plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
 plt.legend()
+plt.xlim(2250, np.max(x))
 plt.show()
 np.savetxt('oscillation_data_{}.csv'.format(ID), np.vstack((x, y_combined)).T, delimiter=',')
