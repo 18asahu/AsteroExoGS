@@ -59,7 +59,7 @@ fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
 x = np.linspace(1, nu_max+fwhm, round((nu_max+fwhm-1)/0.0317)) # μHz
 sigma_c = sigma_c_sun*(L/L_sun)*((M_sun/M)**1.5)*((T_eff_sun/T_eff)**2.75)*((nu_max/nu_max_sun)**0.5)
-tau_c = 250e-6 # Ms
+tau_c = (nu_max/nu_max_sun)**(-1) * (250/1e6) # Ms
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
 
 y = (nu_max/3090)
