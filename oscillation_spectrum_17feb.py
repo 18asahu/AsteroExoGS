@@ -34,8 +34,8 @@ nu_max_sun = 3090 # μHz
 g_solar = 274 # ms-2
 
 # Import the data table, you will need to edit this
-datadir = '/home/rlh/Documents/Group Studies/Data/'
-t = Table.read(datadir+'K_bytempandgrav.csv')
+# datadir = '/home/rlh/Documents/Group Studies/Data/'
+t = Table.read('K_bytempandgrav.csv')
 
 ID = np.random.choice(t['ID'])
 print('Star ID: {}'.format(ID))
@@ -66,7 +66,7 @@ nu_max = nu_max_sun*((g/g_solar)*(T_eff/T_eff_sun)**-0.5)
 nu_max_sun = 3090 # μHz
 fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
-x = np.linspace(1, nu_max+fwhm, round((nu_max+fwhm-1)/0.0317)) # μHz
+x = np.linspace(1, 20000, round((20000)/0.0317)) # μHz
 sigma_c = sigma_c_sun*(L/L_sun)*((M_sun/M)**1.5)*((T_eff_sun/T_eff)**2.75)*((nu_max/nu_max_sun)**0.5)
 tau_c = (nu_max/nu_max_sun)**(-1) * (250/1e6) # Ms
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
@@ -77,28 +77,39 @@ alpha = 2.95*y + 0.39
 gamma_alpha = 3.08*y + 3.32
 Wdip = 4637*y - 141
 nu_dip = 2984*y + 60 
+delta_gamma_dip = -0.47*y + 0.62
+
+linewidthlist = []
 if nu_max < 4000:
-    delta_gamma_dip = -0.47*y + 0.62
+    for i in range(len(nu)):
+        linewidth = np.exp((alpha*np.log(nu[i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(nu[i]/nu_dip))/np.log(Wdip/nu_max))**2))))
+        linewidthlist.append(linewidth)
+        
 else:
-    delta_gamma_dip = 0.001
+    for i in range(len(nu)):
+        linewidth1 = np.exp((alpha*np.log(nu[i]/nu_max) + np.log(gamma_alpha)))
+        linewidthlist.append(linewidth1)
+                           
 
 plt.figure(figsize=(8, 5))
 y_combined = np.zeros_like(x)
-for i in range(oscillation_array.shape[1]):
+for i in l:
     y = np.zeros_like(x)
-    for j in range(oscillation_array.shape[0]):
-        linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(oscillation_array[j, i]/nu_dip))/np.log(Wdip/nu_max))**2))))
-        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth * visibility[i] * lorentzian(x, oscillation_array[j, i], linewidth)
-    plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
-    y_combined += y
+    index= 0
+    for j in nu[i]:
+        y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth[index] * visibility[i] * lorentzian(x, j, linewidth[index])
+        index+=1
+    plt.plot(x, y+P_granulation, label=r'$l$ = {}'.format(i))
+    y_combined += y    
+
 plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
 plt.plot(x, P_granulation, color='k', label='Granulation')
 plt.title('Stellar oscillation spectrum')
 plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
-#plt.xscale("log")
-#plt.yscale("log")
+plt.xscale("log")
+plt.yscale("log")
 plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
 plt.legend()
-plt.xlim(2250, np.max(x))
+# plt.xlim(2250, np.max(x))
 plt.show()
 np.savetxt('oscillation_data_{}.csv'.format(ID), np.vstack((x, y_combined)).T, delimiter=',')
