@@ -50,7 +50,7 @@ T_0 = 436 # K
 T_red = 8907 * (L / L_sun)**(-0.093) # K
 delta_T = 1250 # K
 
-# Temporary code to plot the Sun!
+# Uncomment to plot the solar oscillation spectrum
 #L = L_sun
 #M = M_sun
 #R = R_sun
@@ -58,23 +58,19 @@ delta_T = 1250 # K
 #T_eff = T_eff_sun
 
 D = 1.5 # μHz
-
 oscillation_array = oscillation_array(M, R, 3, 41)
 beta = (1 - np.exp((T_eff - T_red) / delta_T))
 amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
 visibility = np.array([1, 1.5, 0.5, 0.04])
-
 nu_max = nu_max_sun*((g/g_solar)*(T_eff/T_eff_sun)**-0.5)
 nu_max_sun = 3090 # μHz
 fwhm = 0.66 * nu_max**0.88 # μHz
 sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
 x = np.linspace(1, 20000, round((20000)/0.0317)) # μHz
 sigma_c = sigma_c_sun*(L/L_sun)*((M_sun/M)**1.5)*((T_eff_sun/T_eff)**2.75)*((nu_max/nu_max_sun)**0.5)
-tau_c = (nu_max/nu_max_sun)**(-1) * (250/1e6) # Ms
+tau_c = (nu_max/nu_max_sun)**(-1) * 250e-6 # Ms
 P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
-
 y = (nu_max/nu_max_sun)
-
 alpha = 2.95*y + 0.39 
 gamma_alpha = 3.08*y + 3.32
 Wdip = 4637*y - 141
