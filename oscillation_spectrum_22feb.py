@@ -90,7 +90,6 @@ for i in range(oscillation_array.shape[1]):
             linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(oscillation_array[j, i]/nu_dip))/np.log(Wdip/nu_max))**2))))
         else:
             linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)))
-        #linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(oscillation_array[j, i]/nu_dip))/np.log(Wdip/nu_max))**2))))
         y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth * visibility[i] * lorentzian(x, oscillation_array[j, i], linewidth)
     plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
     y_combined += y
@@ -102,6 +101,5 @@ plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
 plt.legend()
 plt.xlim(np.min(x), nu_max+1500)
 plt.show()
-#plt.savefig('oscillation_spectrum.pdf')
-#np.savetxt('oscillation_data_{}.csv'.format(ID), np.vstack((x, y_combined)).T, delimiter=',')  
+#plt.savefig('oscillation_spectrum.pdf') 
 np.save('oscillation_data_{}.npy'.format(ID), np.vstack((x, y_combined)).T)
