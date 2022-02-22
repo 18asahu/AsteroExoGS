@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 22 15:28:43 2022
-
-@author: rlh
-"""
-
-# -*- coding: utf-8 -*-
 
 import numpy as np
 from astropy.table import Table
@@ -47,11 +40,12 @@ t = Table.read(datadir+'K_bytempandgrav.csv')
 
 ID = np.random.choice(t['ID'])
 print('Star ID: {}'.format(ID))
-L = 10**t['ID' == ID]['logL'] * L_sun
-M = t['ID' == ID]['Mass'] * M_sun
-R = np.sqrt((G*(t['ID' == ID]['Mass'] * M_sun))/((10**t['ID' == ID]['logg'])*0.01))
-g = 10**t['ID' == ID]['logg']*0.01
-T_eff = 10**t['ID' == ID]['logTe']
+index = np.where(t['ID'] == ID)
+L = 10**t['logL'][index] * L_sun
+M = t['Mass'][index] * M_sun
+R = np.sqrt((G*(t['Mass'][index] * M_sun))/((10**t['logg'][index])*0.01))
+g = 10**t['logg'][index]*0.01
+T_eff = 10**t['logTe'][index]
 T_0 = 436 # K
 T_red = 8907 * (L / L_sun)**(-0.093) # K
 delta_T = 1250 # K
@@ -104,12 +98,10 @@ plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max}$')
 plt.plot(x, P_granulation, color='k', label='Granulation')
 plt.title('Stellar oscillation spectrum')
 plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
-#plt.xscale("log")
-#plt.yscale("log")
 plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
 plt.legend()
-#plt.xlim(np.min(x), 4000)
-plt.xlim(np.min(x), np.max(x))
+plt.xlim(np.min(x), nu_max+1500)
 plt.show()
 #plt.savefig('oscillation_spectrum.pdf')
-#np.savetxt('oscillation_data_{}.csv'.format(ID), np.vstack((x, y_combined)).T, delimiter=',')   
+#np.savetxt('oscillation_data_{}.csv'.format(ID), np.vstack((x, y_combined)).T, delimiter=',')  
+np.save('oscillation_data_{}.npy'.format(ID), np.vstack((x, y_combined)).T)
