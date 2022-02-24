@@ -33,16 +33,29 @@ T_0 = 436 # K
 delta_T = 1250 # K
 visibility = np.array([1, 1.5, 0.5, 0.04])
 duration = 3.154e7 # s
-print('Please enter the filename of your table or press ENTER for default:')
-filename = input('[K_bytempandgrav.csv] > ')
+print('Please input the filename of your table or press ENTER for default:')
+filename = input('[K_bytempandgrav.csv] >>> ')
 if filename == '':
     filename = 'K_bytempandgrav.csv'
 t = Table.read(filename)
 print('Would you like to run through all stars in the table or select one at random?')
 while True:
-    selection = input('[all/random/sun] > ')
+    selection = input('[all/id/random/sun] >>> ')
     if selection == 'all':
         IDs = t['ID']
+        break
+    if selection == 'id':
+        print('To add a star to the list, input its ID and press ENTER. When you are finished, press ENTER again:')
+        IDs = []
+        while True:
+            query = input('>>> ')
+            if query == '':
+                break
+            elif np.count_nonzero(t['ID'] == int(query)) == 1:
+                IDs.append(int(query))
+                print('Added to list')
+            else:
+                print('Star not found')
         break
     if selection == 'random':
         IDs = [np.random.choice(t['ID'])]
@@ -56,32 +69,36 @@ while True:
         T_eff = T_eff_sun
         break
 for ID in IDs:
+    print('Now generating: {}'.format(ID))
     if selection != 'sun':
-        print('Star ID: {}'.format(ID))
         index = np.where(t['ID'] == ID)
         L = float(10**t['logL'][index] * L_sun)
         M = float(t['Mass'][index] * M_sun)
         R = float(np.sqrt((G * (t['Mass'][index] * M_sun)) / ((10**t['logg'][index]) * 0.01)))
         g = float(10**t['logg'][index] * 0.01)
         T_eff = float(10**t['logTe'][index])
-    oscillation_array = get_oscillation_array(M, R, 3, 41)
-    T_red = 8907 * (L / L_sun)**(-0.093) # K
+    oscillation_array = get_oscillation_array(M, R, 3, 39)
+    T_red = 8907 * (L / L_sun)**-0.093 # K
     beta = (1 - np.exp((T_eff - T_red) / delta_T))
     amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
-    nu_max = nu_max_sun*((g / g_solar)*(T_eff / T_eff_sun)**-0.5)
+    nu_max = nu_max_sun * (g / g_solar) * np.sqrt(T_eff_sun / T_eff)
     fwhm = 0.66 * nu_max**0.88 # μHz
     sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
     cadence = 25 # s
     if nu_max + 2 * fwhm > 20000:
-        print('WARNING! This star has oscillations exceeding the standard frqeuency limit. Would you like to simulate using the fast camera? This will generate 10 times more data!')
-        warning = input('[y/N] > ')
-        if warning == 'y' or warning == 'Y':
-            cadence = 2.5 # s
+        print('WARNING! This star has oscillations exceeding the observational frequency limit. Would you like to simulate using the fast camera instead? [Note: This will generate 10 times more data!]')
+        while True:
+            warning = input('[y/n] >>> ')
+            if warning == 'y':
+                cadence = 2.5 # s
+                break
+            if warning == 'n':
+                break
     lower_limit = 1e6 / duration # μHz
     upper_limit = 1e6 / (2 * cadence) # μHz
     x = np.linspace(lower_limit, upper_limit, round(upper_limit / lower_limit - 1)) # μHz
     y = nu_max / nu_max_sun
-    sigma_c = sigma_c_sun * (L / L_sun) * ((M_sun / M)**1.5) * ((T_eff_sun / T_eff)**2.75) * (y**0.5)
+    sigma_c = sigma_c_sun * (L / L_sun) * ((M_sun / M)**1.5) * ((T_eff_sun / T_eff)**2.75) * np.sqrt(y)
     tau_c = tau_c_sun / y # Ms
     P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
     alpha = 2.95 * y + 0.39 
@@ -110,4 +127,4 @@ for ID in IDs:
     plt.xlim(np.min(x), nu_max+2000)
     plt.ylim(0)
     plt.show()
-    np.save('oscillation_data_{}.npy'.format(ID), np.vstack((x, y_combined)).T)
+    np.save('{}.npy'.format(ID), np.vstack((x, y_combined)).T)
