@@ -111,7 +111,7 @@ for ID in IDs:
     for i in range(oscillation_array.shape[1]):
         y = np.zeros_like(x)
         for j in range(oscillation_array.shape[0]):
-            if nu_max < 4000:
+            if nu_max < 3900:
                 linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(oscillation_array[j, i]/nu_dip))/np.log(Wdip/nu_max))**2))))
             else:
                 linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)))
@@ -127,4 +127,4 @@ for ID in IDs:
     plt.xlim(np.min(x), nu_max+2000)
     plt.ylim(0)
     plt.show()
-    np.save('{}.npy'.format(ID), np.vstack((x, y_combined)).T)
+    np.save('{}.npy'.format(ID), np.vstack((x, y_combined + P_granulation)).T)
