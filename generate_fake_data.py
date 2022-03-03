@@ -5,6 +5,10 @@ import numpy as np
 from astropy.table import Table
 import astropy.constants as const
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['font.family'] = 'serif'
+mpl.rcParams['font.size'] = 11
 
 def get_oscillation_array(M, R, l_max, n_max):
     oscillation_array = np.zeros((n_max+1, l_max+1))
@@ -34,9 +38,9 @@ delta_T = 1250 # K
 visibility = np.array([1, 1.5, 0.5, 0.04])
 duration = 3.154e7 # s
 print('Please input the filename of your table or press ENTER for default:')
-filename = input('[K_bytempandgrav.csv] >>> ')
+filename = input('[Target_Selection.csv] >>> ')
 if filename == '':
-    filename = 'K_bytempandgrav.csv'
+    filename = 'Target_Selection.csv'
 t = Table.read(filename)
 print('Would you like to run through all stars in the table or select one at random?')
 while True:
@@ -106,7 +110,7 @@ for ID in IDs:
     Wdip = 4637 * y - 141
     nu_dip = 2984 * y + 60 
     delta_gamma_dip = -0.47 * y + 0.62
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(7, 4))
     y_combined = np.zeros_like(x)
     for i in range(oscillation_array.shape[1]):
         y = np.zeros_like(x)
