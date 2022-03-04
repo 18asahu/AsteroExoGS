@@ -15,7 +15,7 @@ def get_oscillation_array(M, R, l_max, n_max):
     delta_nu = M**(1/2) * R**(-3/2) * 134.9 / (M_sun**(1/2) * R_sun**(-3/2))
     for i in range(l_max+1):
         for j in range(n_max+1):
-            oscillation_array[j, i] = delta_nu * (j + i/2 + 1.45) - 1.5 * i * (i + 1)
+            oscillation_array[j, i] = delta_nu * (j + i/2 + 1.45) - 2.5 * i * (i + 1)
     return oscillation_array
 
 def lorentzian(x, x_0, width):
