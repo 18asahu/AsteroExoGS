@@ -1,0 +1,126 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 24 17:11:31 2022
+
+@author: Saskia
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.special
+import math
+
+def nu_r(m, nu, omega):
+    return nu + m*omega
+
+def lorentzian(x, x_0, width):
+    return 1 / ((1 + ((x - x_0) / (0.5*width))**2))
+
+# def nu(delta_nu, n, l):
+#     nu = []
+#     for i in l:
+#         nu.append(delta_nu * (n + i/2 + 1.45) - D * i * (i + 1))
+#     return nu
+
+x = np.arange(1, 20000, 0.0317)
+
+# Define solar parameters
+L_sun = 3.846e26 # W
+M_sun = 1.989e30 # kg
+R_sun = 6.957e8 # m
+T_eff_sun = 5777 # K
+sigma_c_sun = 60
+g_solar = 274 # ms-2
+tau_c_sun = 250/1000000
+
+L = L_sun
+M = M_sun
+R = R_sun
+T_eff = T_eff_sun
+g = g_solar
+nu_max_sun = 3090 # microHz
+
+
+D = 1.5
+nu_max = 3090
+
+T_0 = 436 # K
+T_red = 8907 * (L / L_sun)**(-0.093) # K
+delta_T = 1250 # K
+n = 20
+
+
+delta_nu = M**(1/2) * R**(-3/2) * 135 / (M_sun**(1/2) * R_sun**(-3/2)) # μHz
+nu = nu_max
+beta = (1 - np.exp((T_eff - T_red) / delta_T))
+amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
+
+
+# print(m)
+
+#linewidth
+y = (nu_max/3090)
+
+alpha = 2.95*y + 0.39
+gamma_alpha = 3.08*y + 3.32
+Wdip = -141*y + 4637
+nu_dip = 2984*y+ 60
+delta_gamma_dip = -0.47*y + 0.62
+
+
+if nu_max < 3900:
+        linewidth = np.exp((alpha*np.log(nu/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(nu/nu_dip))/np.log(Wdip/nu_max))**2))))
+
+else:
+        linewidth = np.exp((alpha*np.log(nu/nu_max) + np.log(gamma_alpha)))
+        
+def ep(m, l, z):
+    return scipy.special.lpmn(m, l, z)[0]
+
+l=3
+m = np.arange(-l, l+1, 1)
+
+# i = 45*(np.pi/180)
+# z = np.cos(i)
+
+i = [0, 30, 70, 90]
+
+z = []
+for p in range(len(i)):
+    Z = np.cos(i[p]*np.pi/180)
+    z.append(Z)
+print(z)
+
+# z = [0, 0.5, 1]
+# print(i)
+omega = 1.5
+
+plt.figure(figsize=(8, 5))
+for n in z:
+    y_combined =  np.zeros_like(x)
+    for j in m:
+        y = lorentzian(x, nu_r(j, nu, omega), linewidth) * (math.factorial(l-abs(j))/math.factorial(1+abs(j))) * (ep(abs(j), l, n)[abs(j), l])**2
+        y_combined += y
+    plt.plot(x, y_combined, label='i={}\N{DEGREE SIGN}'.format(i[z.index(n)]))
+    plt.legend(fontsize=14)
+
+    
+# z=0
+    
+# y_combined = np.zeros_like(x)
+# for j in m:
+#     y = lorentzian(x, nu_r(j, nu, omega), linewidth) * (math.factorial(l-abs(j))/math.factorial(1+abs(j))) * (ep(abs(j), l, z)[abs(j), l])**2
+#     y_combined += y
+# plt.plot(x, y_combined)
+  
+# plt.plot(x,y_combined)
+plt.xlim(3082, 3097)
+plt.rc('xtick', labelsize=16) 
+plt.rc('ytick', labelsize=16)
+plt.title('Rotational splitting of l={} solar mode for $\Omega$=1.5$\mu$Hz'.format(l), fontsize=18)
+plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]', fontsize=18)
+plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]', fontsize=18)
+plt.savefig('rotationalsplittingl3o15.pdf', format='pdf')
+plt.show()
+
+
