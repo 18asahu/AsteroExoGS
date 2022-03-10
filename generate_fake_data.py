@@ -19,7 +19,7 @@ def get_oscillation_array(M, R, l_max, n_max):
     return oscillation_array
 
 def lorentzian(x, x_0, width):
-    return 1 / (1 + ((x - x_0) / width / 2)**2)
+    return 1 / (1 + (2 * (x - x_0) / width)**2)
 
 def gaussian(x, sigma, mu):
     return np.exp(-(x - mu)**2 / (2 * sigma**2))
@@ -35,7 +35,7 @@ nu_max_sun = 3090 # μHz
 g_solar = 274 # ms-2
 T_0 = 436 # K
 delta_T = 1250 # K
-visibility = np.array([1, 1.5, 0.5, 0.04])
+visibility = np.array([1, 1.505, 0.62, 0.075])
 duration = 3.154e7 # s
 print('Please input the filename of your table or press ENTER for default:')
 filename = input('[Target_Selection.csv] >>> ')
@@ -105,19 +105,21 @@ for ID in IDs:
     sigma_c = sigma_c_sun * (L / L_sun) * ((M_sun / M)**1.5) * ((T_eff_sun / T_eff)**2.75) * np.sqrt(y)
     tau_c = tau_c_sun / y # Ms
     P_granulation = 4 * sigma_c**2 * tau_c / (1 + (2 * np.pi * x * tau_c)**2)
-    alpha = 2.95 * y + 0.39 
-    gamma_alpha = 3.08 * y + 3.32
+    delta_gamma_dip = -0.47 * y + 0.62
     Wdip = 4637 * y - 141
     nu_dip = 2984 * y + 60 
-    delta_gamma_dip = -0.47 * y + 0.62
     plt.figure(figsize=(7, 4))
     y_combined = np.zeros_like(x)
     for i in range(oscillation_array.shape[1]):
         y = np.zeros_like(x)
         for j in range(oscillation_array.shape[0]):
             if nu_max < 3900:
+                alpha = 2.95 * y + 0.39
+                gamma_alpha = 3.08 * y + 3.32
                 linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(oscillation_array[j, i]/nu_dip))/np.log(Wdip/nu_max))**2))))
             else:
+                alpha = 1.6
+                gamma_alpha = 1.38
                 linewidth = np.exp((alpha*np.log(oscillation_array[j, i]/nu_max) + np.log(gamma_alpha)))
             y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth * visibility[i] * lorentzian(x, oscillation_array[j, i], linewidth)
         plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
