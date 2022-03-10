@@ -108,7 +108,7 @@ for ID in IDs:
     delta_gamma_dip = -0.47 * y + 0.62
     Wdip = 4637 * y - 141
     nu_dip = 2984 * y + 60 
-    plt.figure(figsize=(7, 4))
+    plt.figure(figsize=(5.5, 4))
     y_combined = np.zeros_like(x)
     for i in range(oscillation_array.shape[1]):
         y = np.zeros_like(x)
@@ -124,13 +124,16 @@ for ID in IDs:
             y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth * visibility[i] * lorentzian(x, oscillation_array[j, i], linewidth)
         plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
         y_combined += y
+        if i == 1:
+            plot_lim_index = np.argmax(y)
+            plot_lim = np.max(y)
     plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max} =$'+' {} '.format(round(nu_max))+r'$\mu$Hz')
     plt.plot(x, P_granulation, color='k', label='Granulation')
     plt.title('Stellar oscillation spectrum [ID: {}]'.format(ID))
     plt.xlabel(r'Frequency, $\nu$ [$\mu$Hz]')
     plt.ylabel(r'PSD [ppm$^2 \mu$Hz$^{-1}$]')
     plt.legend()
-    plt.xlim(np.min(x), nu_max+2000)
-    plt.ylim(0)
-    plt.show()
+    plt.xlim(nu_max-3000, nu_max+2000)
+    plt.ylim(0, 1.1*(P_granulation[plot_lim_index] + plot_lim))
+    plt.savefig('{}.pdf'.format(ID))
     np.save('{}.npy'.format(ID), np.vstack((x, y_combined + P_granulation)).T)
