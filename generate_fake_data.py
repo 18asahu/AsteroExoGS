@@ -22,8 +22,8 @@ def lorentzian(x, x_0, width):
 def gaussian(x, sigma, mu):
     return np.exp(-(x - mu)**2 / (2 * sigma**2))
 
-def nu_r(m, nu, omega):
-    return nu + m*omega
+def nu_r(m, nu, rotation_freq):
+    return nu + m * rotation_freq
 
 def ep(m, l, i):
     return math.factorial(l - abs(m)) / math.factorial(l + abs(m)) * (scipy.special.lpmn(m, l, np.cos(i))[0][abs(m), l])**2
@@ -75,9 +75,10 @@ while True:
         R = R_sun
         g = g_solar
         T_eff = T_eff_sun
-        inclination = 0
-        angular_freq = (2e6 * np.pi) / (26.24 * 24 * 3600)
+        inclination = np.pi / 2
+        rotation_freq = 1e6 / (26.24 * 24 * 3600)
         break
+nu_max_list = open('nu_max_list.txt', 'w')
 for ID in IDs:
     print('Now generating: {}'.format(ID))
     if selection != 'sun':
@@ -88,12 +89,13 @@ for ID in IDs:
         g = float(10**t['logg'][index] * 0.01)
         T_eff = float(10**t['logTe'][index])
         inclination = float(t['inclination'][index])
-        angular_freq = float(t['angular_freq'][index])
+        rotation_freq = float(t['rotation_freq'][index]) / (2 * np.pi)
     oscillation_array = get_oscillation_array(M, R, 3, 39)
     T_red = 8907 * (L / L_sun)**-0.093 # K
     beta = (1 - np.exp((T_eff - T_red) / delta_T))
     amplitude = 2.1 * beta * L * M_sun / L_sun / M * (T_eff_sun / T_eff)**2 # ppm
     nu_max = nu_max_sun * (g / g_solar) * np.sqrt(T_eff_sun / T_eff)
+    nu_max_list.write(str(nu_max) + '\n')
     fwhm = 0.66 * nu_max**0.88 # μHz
     sigma = fwhm / (2 * np.sqrt(2 * np.log(2)))
     cadence = 25 # s
@@ -116,13 +118,13 @@ for ID in IDs:
     delta_gamma_dip = -0.47 * z + 0.62
     Wdip = 4637 * z - 141
     nu_dip = 2984 * z + 60
-    if nu_max < 3900:
+    if nu_max < 4000:
         alpha = 2.95 * z + 0.39
         gamma_alpha = 3.08 * z + 3.32
         linewidth = np.exp((alpha*np.log(oscillation_array/nu_max) + np.log(gamma_alpha)) + ((np.log(delta_gamma_dip))/(1+(((2*np.log(oscillation_array/nu_dip))/np.log(Wdip/nu_max))**2))))
     else:
-        alpha = 1.6
-        gamma_alpha = 1.38
+        alpha = 2.69
+        gamma_alpha = 0.77
         linewidth = np.exp((alpha*np.log(oscillation_array/nu_max) + np.log(gamma_alpha)))
     plt.figure(figsize=(7, 5))
     y_combined = np.zeros_like(x)
@@ -131,7 +133,7 @@ for ID in IDs:
         m = np.arange(-i, i+1)
         for j in range(oscillation_array.shape[0]):
             for k in m:
-                y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth[j, i] * visibility[i] * lorentzian(x, nu_r(k, oscillation_array[j, i], angular_freq), linewidth[j, i]) * ep(k, i, inclination)
+                y += gaussian(x, sigma, nu_max) * amplitude**2 * 2 / np.pi / linewidth[j, i] * visibility[i] * lorentzian(x, nu_r(k, oscillation_array[j, i], rotation_freq), linewidth[j, i]) * ep(k, i, inclination)
         plt.plot(x, y + P_granulation, label=r'$l$ = {}'.format(i))
         y_combined += y
     plt.axvline(x=nu_max, ls='--', color='gray', label=r'$\nu_{\rm max} =$'+' {} '.format(round(nu_max))+r'$\mu$Hz')
@@ -144,3 +146,4 @@ for ID in IDs:
     plt.ylim(0, 1.1 * np.max((y_combined + P_granulation)[np.abs(x - nu_max) < 2 * fwhm]))
     plt.savefig('{}.pdf'.format(ID))
     np.save('{}.npy'.format(ID), np.vstack((x, y_combined + P_granulation)).T)
+nu_max_list.close()
