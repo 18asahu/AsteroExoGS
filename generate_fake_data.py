@@ -26,7 +26,7 @@ def nu_r(m, nu, rotation_freq):
     return nu + m * rotation_freq
 
 def ep(m, l, i):
-    return math.factorial(l - abs(m)) / math.factorial(l + abs(m)) * (scipy.special.lpmn(m, l, np.cos(i))[0][abs(m), l])**2
+    return math.factorial(l - abs(m)) / math.factorial(l + abs(m)) * (scipy.special.lpmn(abs(m), l, np.cos(i))[0][abs(m), l])**2
 
 G = const.G.value
 L_sun = const.L_sun.value # W
@@ -89,7 +89,7 @@ for ID in IDs:
         g = float(10**t['logg'][index] * 0.01)
         T_eff = float(10**t['logTe'][index])
         inclination = float(t['inclination'][index])
-        rotation_freq = float(t['rotation_freq'][index]) / (2 * np.pi)
+        rotation_freq = float(t['rotation_freq'][index])
     oscillation_array = get_oscillation_array(M, R, 3, 39)
     T_red = 8907 * (L / L_sun)**-0.093 # K
     beta = (1 - np.exp((T_eff - T_red) / delta_T))
